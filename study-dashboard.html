@@ -937,7 +937,8 @@ function toggleTheme() {
   const html = document.documentElement;
   const next = html.dataset.theme === 'dark' ? 'light' : 'dark';
   html.dataset.theme = next;
-  document.querySelector('.theme-btn').textContent = next === 'dark' ? '☀️' : '🌙';
+  const btn = document.querySelector('.theme-btn') || document.getElementById('darkModeToggle');
+  if (btn) btn.textContent = next === 'dark' ? '☀️' : '🌙';
   localStorage.setItem('study_theme', next);
 }
 
@@ -1560,10 +1561,20 @@ function escHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('version').textContent = APP_VERSION;
+  const versionEl = document.getElementById('version');
+  if (versionEl) versionEl.textContent = APP_VERSION;
+  
   const theme = localStorage.getItem('study_theme') || 'light';
   document.documentElement.dataset.theme = theme;
-  document.querySelector('.theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
+  
+  const themeBtn = document.querySelector('.theme-btn') || document.getElementById('darkModeToggle');
+  if (themeBtn) themeBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  
+  const darkToggle = document.getElementById('darkModeToggle');
+  if (darkToggle) {
+    darkToggle.addEventListener('click', toggleTheme);
+  }
+  
   initFirebase();
   renderRoadmap();
   renderProjects();
