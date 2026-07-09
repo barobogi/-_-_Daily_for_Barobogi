@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="theme.css">
 
 <meta charset="UTF-8">
@@ -251,16 +252,29 @@ label { font-size:12px; color:var(--text2); margin-bottom:4px; display:block; }
 </style>
 </head>
 <body>
-
-<header>
-  <div class="header-inner">
-    <div class="logo">📚 바로보기의 공부방 <span id="version"></span></div>
-    <div class="header-right">
-      <span class="fb-status offline" id="fbStatus">● Firebase</span>
-      <button class="theme-btn" onclick="toggleTheme()" title="다크모드">🌙</button>
+  <!-- HEADER -->
+  <header class="w-full border-b" style="background-color: var(--bg-primary); border-color: var(--border); height:60px;">
+    <div class="max-w-4xl mx-auto px-6 h-full flex justify-between items-center">
+      <a href="index.html" class="text-base font-bold tracking-tight transition-colors duration-200" style="color: var(--text-primary);">
+        Today for <span style="color: var(--accent);">Barobogi</span>
+      </a>
+      <div class="flex gap-4 items-center">
+        <nav class="flex gap-8 text-sm" style="color: var(--text-secondary);">
+          <a href="index.html" id="nav-home" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Home</a>
+          <a href="logs.html" id="nav-logs" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Logs</a>
+          <a href="ai-study.html" id="nav-aistudy" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">AI Study</a>
+          <a href="study-dashboard.html" id="nav-studyboard" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Study Board</a>
+          <a href="stock-dashboard.html" id="nav-stock" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Stock</a>
+          <a href="stats.html" id="nav-stats" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Stats</a>
+          <a href="goals.html" id="nav-goals" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Goals</a>
+          <a href="information.html" id="nav-multimedia" class="nav-active hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Multimedia</a>
+        </nav>
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+      </div>
     </div>
-  </div>
-</header>
+  </header>
+
+
 
 <div class="tab-bar">
   <div class="tab-inner">
