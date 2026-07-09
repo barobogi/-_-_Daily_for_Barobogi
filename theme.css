@@ -96,3 +96,50 @@ h1, h2, h3, h4, h5, h6, .brand-font {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-secondary);
 }
+
+/* Dark Mode overrides for Tailwind hardcoded white backgrounds (Stock Dashboard) */
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] tr.bg-white,
+html[data-theme="dark"] div.bg-white {
+  background-color: var(--bg-secondary) !important;
+  color: var(--text-primary) !important;
+}
+
+html[data-theme="dark"] .border-t-0,
+html[data-theme="dark"] .border,
+html[data-theme="dark"] .border-gray-100,
+html[data-theme="dark"] .border-purple-100,
+html[data-theme="dark"] .border-\[\#E5E7EB\] {
+  border-color: var(--border) !important;
+}
+
+html[data-theme="dark"] th {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+html[data-theme="dark"] td {
+  border-bottom-color: var(--border) !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Dark Mode overrides for Study Board Tab Bar and Buttons */
+html[data-theme="dark"] .tab-bar {
+  background-color: var(--bg-secondary) !important;
+  border-bottom-color: var(--border) !important;
+}
+
+html[data-theme="dark"] .tab-btn {
+  color: var(--text-secondary) !important;
+}
+
+html[data-theme="dark"] .tab-btn:hover {
+  color: var(--accent) !important;
+}
+
+html[data-theme="dark"] .tab-btn.active {
+  color: var(--accent) !important;
+  border-bottom-color: var(--accent) !important;
+}
+

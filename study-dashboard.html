@@ -33,24 +33,32 @@ const APP_VERSION = 'v1.2';
 </script>
 <style>
 :root {
-  --bg: #f8f7f4; --bg2: #ffffff; --bg3: #f0ede8;
-  --text: #2d2a26; --text2: #6b6560; --text3: #9e9894;
-  --border: #e2ddd8; --shadow: 0 1px 4px rgba(0,0,0,.08);
-  --accent: #e8720c; --accent2: #fff3eb; --accent3: #ffd9b8;
-  --green: #16a34a; --green2: #dcfce7;
-  --blue: #2563eb; --blue2: #dbeafe;
-  --purple: #7c3aed; --purple2: #ede9fe;
-  --red: #dc2626; --red2: #fee2e2;
-  --yellow: #d97706; --yellow2: #fef3c7;
-  --radius: 10px; --radius-sm: 6px;
+  --bg: var(--bg-primary);
+  --bg2: var(--bg-secondary);
+  --bg3: var(--bg-primary);
+  --text: var(--text-primary);
+  --text2: var(--text-secondary);
+  --text3: var(--text-tertiary);
+  --border: var(--border);
+  --shadow: var(--shadow-sm);
+  --accent: var(--accent);
+  --accent2: var(--accent-light);
+  --accent3: rgba(91, 141, 238, 0.3);
+  --green: #10B981;
+  --green2: rgba(16, 185, 129, 0.15);
+  --blue: #3B82F6;
+  --blue2: rgba(59, 130, 246, 0.15);
+  --purple: #8B5CF6;
+  --purple2: rgba(139, 92, 246, 0.15);
+  --red: #EF4444;
+  --red2: rgba(239, 68, 68, 0.15);
+  --yellow: #F59E0B;
+  --yellow2: rgba(245, 158, 11, 0.15);
+  --radius: 12px;
+  --radius-sm: 8px;
 }
 [data-theme=dark] {
-  --bg: #1a1917; --bg2: #242220; --bg3: #2e2b28;
-  --text: #f0ece8; --text2: #a8a29e; --text3: #6b6560;
-  --border: #3d3a36; --shadow: 0 1px 4px rgba(0,0,0,.4);
-  --accent2: #2d1a0a; --accent3: #5c2e00;
-  --green2: #052e16; --blue2: #1e3a5f; --purple2: #2e1065;
-  --red2: #450a0a; --yellow2: #451a03;
+  --shadow: var(--shadow-md);
 }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); font-size:14px; line-height:1.6; }
