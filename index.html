@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Today for Barobogi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      /* Light Mode */
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F9FAFB;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --border: #E5E7EB;
+      --accent: #5B8DEE;
+      --accent-light: #EBF0FF;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
+    }
+
+    html[data-theme="dark"] {
+      --bg-primary: #0F1117;
+      --bg-secondary: #161B22;
+      --text-primary: #E6EDF3;
+      --text-secondary: #8B949E;
+      --text-tertiary: #6E7681;
+      --border: #30363D;
+      --accent: #79C0FF;
+      --accent-light: #1F6FEB;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-active {
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 2px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-hover {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  background-color 0.2s ease-out;
+      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      background-color: var(--bg-secondary);
+    }
+
+    .feature-card-hover {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease-out;
+    }
+
+    .feature-card-hover:hover {
+      transform: translateY(-8px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent);
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .dark-mode-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      color: var(--text-primary);
+    }
+
+    .dark-mode-toggle:hover {
+      background-color: var(--bg-secondary);
+    }
+
+    /* Home: hide edit buttons from fetched cards */
+    .edit-btn { display: none !important; }
+
+    /* Detail modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; padding: 1rem;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-box {
+      width: 100%; max-width: 600px; max-height: 82vh; overflow-y: auto;
+      border-radius: 12px; padding: 1.5rem;
+      background-color: var(--bg-primary); border: 1px solid var(--border);
+      box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+      transform: translateY(8px); transition: transform 0.2s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+
+    /* Study preview hover */
+    .study-preview { cursor: pointer; border-radius: 4px; transition: background-color 0.2s; }
+    .study-preview:hover { background-color: var(--bg-secondary); }
+
+    /* Skeleton loader */
+    .skeleton { background: var(--bg-secondary); border-radius: 6px; animation: pulse 1.5s infinite; height: 14px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col" style="background-color: var(--bg-primary); color: var(--text-primary);">
+
+  <!-- HEADER -->
+  <header class="w-full border-b" style="background-color: var(--bg-primary); border-color: var(--border); height:60px;">
+    <div class="max-w-4xl mx-auto px-6 h-full flex justify-between items-center">
+      <a href="index.html" class="text-base font-bold tracking-tight transition-colors duration-200" style="color: var(--text-primary);">
+        Today for <span style="color: var(--accent);">Barobogi</span>
+      </a>
+      <div class="flex gap-4 items-center">
+        <nav class="flex gap-8 text-sm" style="color: var(--text-secondary);">
+          <a href="index.html" class="nav-active font-medium">Home</a>
+          <a href="logs.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Logs</a>
+          <a href="ai-study.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">AI Study</a>
+          <a href="stock-dashboard.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Stock</a>
+          <a href="stats.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Stats</a>
+          <a href="goals.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Goals</a>
+          <a href="information.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Multimedia</a>
+        </nav>
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-4xl w-full mx-auto px-6 flex-grow">
+
+    <!-- HERO -->
+    <section class="py-12 border-b" style="border-color: var(--border);">
+      <p class="text-xs font-semibold tracking-widest uppercase mb-4" style="color: var(--accent);">Overview</p>
+      <h1 class="text-[32px] font-bold leading-snug mb-4" style="color: var(--text-primary);">
+        안녕하세요! 오늘을 선명히 바로보고 기록하는<br>
+        개발자이자 AI 탐구자, <span class="underline decoration-2" style="text-decoration-color: var(--accent);">Barobogi</span>입니다.
+      </h1>
+      <p class="text-sm leading-relaxed max-w-2xl" style="color: var(--text-secondary);">
+        이곳은 저의 소소한 하루 일상(Logs)과 매일 치열하게 부딪히는 AI 지식(AI Study)을 축적하는 가든입니다.
+        완성된 답을 나열하기보다, 계속해서 더 가치 있는 매일을 찾아 나가는 과정을 오롯이 기록합니다.
+      </p>
+    </section>
+
+    <!-- GRID -->
+    <section class="py-12 grid grid-cols-1 md:grid-cols-2 gap-12">
+
+      <!-- LEFT: DAILY LOG -->
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-base font-semibold" style="color: var(--text-primary);">📂 Today's Daily Log</h2>
+          <a href="logs.html" class="text-xs transition-colors duration-200" style="color: var(--text-secondary);">View All →</a>
+        </div>
+
+        <div class="space-y-4" id="homeLogList">
+          <div class="skeleton" style="height:80px;"></div>
+          <div class="skeleton" style="height:80px;"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: AI STUDY -->
+      <div>
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-base font-semibold" style="color: var(--text-primary);">📝 Recent AI Study</h2>
+          <a href="ai-study.html" class="text-xs transition-colors duration-200" style="color: var(--text-secondary);">View All →</a>
+        </div>
+
+        <div id="homeStudyList">
+          <div class="py-3" style="border-top: 1px solid var(--border);"><div class="skeleton mb-1" style="height:10px; width:60px;"></div><div class="skeleton" style="height:14px;"></div></div>
+          <div class="py-3" style="border-top: 1px solid var(--border);"><div class="skeleton mb-1" style="height:10px; width:80px;"></div><div class="skeleton" style="height:14px;"></div></div>
+          <div class="py-3" style="border-top: 1px solid var(--border);"><div class="skeleton mb-1" style="height:10px; width:70px;"></div><div class="skeleton" style="height:14px;"></div></div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="w-full border-t" style="background-color: var(--bg-secondary); border-color: var(--border);">
+    <div class="max-w-4xl mx-auto px-6 py-10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs" style="color: var(--text-tertiary);">
+      <div>
+        <p class="font-semibold mb-1" style="color: var(--text-secondary);">CONTACT</p>
+        <p>hello@barobogi.me</p>
+      </div>
+      <div class="text-center sm:text-right">
+        <p class="mb-1">Inspired by cher1shRXD & Lee Boa</p>
+        <p>&copy; 2026 Barobogi. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- DETAIL MODAL -->
+  <div class="modal-overlay" id="detailModal">
+    <div class="modal-box">
+      <div class="flex justify-between items-start mb-4">
+        <div>
+          <p id="detailMeta" class="text-xs mb-1" style="color: var(--text-tertiary);"></p>
+          <h2 id="detailTitle" class="text-base font-bold" style="color: var(--text-primary);"></h2>
+        </div>
+        <button onclick="closeDetailModal()" style="color: var(--text-tertiary); font-size: 22px; line-height: 1; background: none; border: none; cursor: pointer; flex-shrink:0; margin-left:12px;">×</button>
+      </div>
+      <p id="detailContent" class="text-sm leading-relaxed mb-4" style="color: var(--text-secondary); white-space: pre-wrap;"></p>
+      <div id="detailTags" class="flex gap-2 flex-wrap"></div>
+      <div class="mt-5 pt-4" style="border-top: 1px solid var(--border);">
+        <a id="detailLink" href="#" class="text-xs font-semibold" style="color: var(--accent);">전체 목록 보기 →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark Mode Toggle
+    function initDarkMode() {
+      const toggle = document.getElementById('darkModeToggle');
+      const html = document.documentElement;
+
+      // Load saved preference or detect system preference
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved ? saved === 'dark' : prefersDark;
+
+      // Set initial theme
+      setTheme(isDark ? 'dark' : 'light');
+
+      // Toggle button click
+      toggle.addEventListener('click', () => {
+        const current = html.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+
+      // Listen for system preference changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    }
+
+    function setTheme(theme) {
+      const html = document.documentElement;
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      updateToggleIcon(theme);
+    }
+
+    function updateToggleIcon(theme) {
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) {
+        toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+    }
+
+    // ── Detail Modal ─────────────────────────────────────
+    function openDetailModal(title, meta, content, tags, linkHref) {
+      document.getElementById('detailTitle').textContent = title;
+      document.getElementById('detailMeta').textContent = meta;
+      document.getElementById('detailContent').textContent = content;
+      document.getElementById('detailLink').href = linkHref;
+      const tagsEl = document.getElementById('detailTags');
+      tagsEl.innerHTML = tags.map(t =>
+        `<span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#${t}</span>`
+      ).join('');
+      document.getElementById('detailModal').classList.add('open');
+    }
+
+    function closeDetailModal() {
+      document.getElementById('detailModal').classList.remove('open');
+    }
+
+    // ── Dynamic Content Load ─────────────────────────────
+    async function loadLatestEntries() {
+      // --- Logs (최신 2개) ---
+      try {
+        const res = await fetch('./logs.html');
+        const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        const cards = [...doc.querySelectorAll('#logList .log-card')].slice(0, 2);
+        const logContainer = document.getElementById('homeLogList');
+        logContainer.innerHTML = '';
+        cards.forEach(card => {
+          const clone = card.cloneNode(true);
+          // 클릭 시 상세 모달 오픈
+          const titleEl = clone.querySelector('h3');
+          const dateEl = clone.querySelector('span.text-xs');
+          const contentEl = clone.querySelector('p');
+          const tagEls = [...(clone.querySelectorAll('.mt-3 span') || [])];
+          const title = titleEl ? titleEl.textContent.trim() : '';
+          const date = dateEl ? dateEl.textContent.trim() : '';
+          const content = contentEl ? contentEl.textContent.trim() : '';
+          const tags = tagEls.map(s => s.textContent.trim().replace(/^#/, ''));
+          clone.style.cursor = 'pointer';
+          clone.addEventListener('click', (e) => { if (!e.target.closest('.edit-btn')) window.location.href = 'logs.html'; });
+          // 내용 3줄로 미리보기 (서식 유지 + 페이드아웃)
+          if (contentEl) { contentEl.style.cssText += '; max-height:4.5em; overflow:hidden; -webkit-mask-image:linear-gradient(to bottom, black 30%, transparent 100%); mask-image:linear-gradient(to bottom, black 30%, transparent 100%);'; }
+          logContainer.appendChild(clone);
+        });
+      } catch(e) {
+        document.getElementById('homeLogList').innerHTML = '<p class="text-xs" style="color: var(--text-tertiary);">로드 실패 — 잠시 후 새로고침</p>';
+      }
+
+      // --- Study (최신 3개, 제목+카테고리+날짜만 미리보기) ---
+      try {
+        const res = await fetch('./ai-study.html');
+        const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
+        const cards = [...doc.querySelectorAll('#studyList .study-card')].slice(0, 3);
+        const studyContainer = document.getElementById('homeStudyList');
+        studyContainer.innerHTML = '';
+        cards.forEach(card => {
+          const category = card.getAttribute('data-category') || '';
+          // title: <p class="...font-semibold..."> (제목은 이제 <a>가 아닌 <p>)
+          const titleEl = card.querySelector('p.font-semibold') || card.querySelector('a');
+          const allPs = card.querySelectorAll('p');
+          const metaEl = allPs[allPs.length - 1]; // 마지막 p = 날짜·태그
+          const contentEl = card.querySelector('.content-preview') || (allPs.length > 2 ? allPs[allPs.length - 2] : null);
+          const title = titleEl ? titleEl.textContent.trim() : '';
+          const meta = metaEl ? metaEl.textContent.trim() : '';
+          const content = contentEl ? contentEl.textContent.trim() : '';
+          const el = document.createElement('div');
+          el.className = 'study-preview py-4';
+          el.style.borderTop = '1px solid var(--border)';
+          el.innerHTML = `
+            <span class="text-[10px] font-semibold tracking-wider uppercase" style="color: var(--accent);">${category}</span>
+            <p class="text-sm font-medium mt-1 mb-1" style="color: var(--text-primary);">${title}</p>
+            <p class="text-xs" style="color: var(--text-tertiary);">${meta}</p>`;
+          el.style.cursor = 'pointer';
+          el.addEventListener('click', () => { window.location.href = 'ai-study.html'; });
+          studyContainer.appendChild(el);
+        });
+      } catch(e) {
+        document.getElementById('homeStudyList').innerHTML = '<p class="text-xs" style="color: var(--text-tertiary);">로드 실패 — 잠시 후 새로고침</p>';
+      }
+    }
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetailModal(); });
+
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => { initDarkMode(); loadLatestEntries(); });
+    } else {
+      initDarkMode(); loadLatestEntries();
+    }
+  </script>
+
+</body>
+</html>

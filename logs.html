@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logs — Today for Barobogi</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      /* Light Mode */
+      --bg-primary: #FFFFFF;
+      --bg-secondary: #F9FAFB;
+      --text-primary: #111827;
+      --text-secondary: #6B7280;
+      --text-tertiary: #9CA3AF;
+      --border: #E5E7EB;
+      --accent: #5B8DEE;
+      --accent-light: #EBF0FF;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.1);
+    }
+
+    html[data-theme="dark"] {
+      --bg-primary: #0F1117;
+      --bg-secondary: #161B22;
+      --text-primary: #E6EDF3;
+      --text-secondary: #8B949E;
+      --text-tertiary: #6E7681;
+      --border: #30363D;
+      --accent: #79C0FF;
+      --accent-light: #1F6FEB;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-lg: 0 12px 32px rgba(0,0,0,0.5);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .nav-active {
+      color: var(--text-primary);
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 2px;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card-hover {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                  background-color 0.2s ease-out;
+      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      background-color: var(--bg-secondary);
+    }
+
+    a:focus-visible, button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    .dark-mode-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      transition: background-color 0.2s ease;
+      color: var(--text-primary);
+    }
+
+    .dark-mode-toggle:hover {
+      background-color: var(--bg-secondary);
+    }
+
+    /* PAT indicator */
+    .pat-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .pat-dot.set { background-color: #10B981; }
+    .pat-dot.unset { background-color: var(--text-tertiary); }
+
+    /* Edit button per card */
+    .edit-btn {
+      opacity: 0; transition: opacity 0.2s ease;
+      background-color: var(--bg-secondary); color: var(--text-tertiary);
+      border: 1px solid var(--border); cursor: pointer;
+      font-size: 11px; padding: 2px 8px; border-radius: 4px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .log-card:hover .edit-btn { opacity: 1; }
+
+    /* Toast */
+    @keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 200;
+      background: #10B981; color: white; padding: 12px 20px;
+      border-radius: 8px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2); animation: toastIn 0.3s ease-out;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 50; padding: 1rem;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-box {
+      width: 100%; max-width: 520px; border-radius: 12px; padding: 1.5rem;
+      background-color: var(--bg-primary); border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      transform: translateY(8px); transition: transform 0.2s ease;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0); }
+    .modal-input {
+      width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border);
+      background-color: var(--bg-secondary); color: var(--text-primary);
+      font-size: 13px; outline: none; transition: border-color 0.2s;
+    }
+    .modal-input:focus { border-color: var(--accent); }
+    .snippet-box {
+      font-family: monospace; font-size: 11px; padding: 10px;
+      background-color: var(--bg-secondary); border: 1px solid var(--border);
+      border-radius: 8px; white-space: pre-wrap; word-break: break-all;
+      color: var(--text-secondary); max-height: 160px; overflow-y: auto;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col" style="background-color: var(--bg-primary); color: var(--text-primary);">
+
+  <!-- PASSWORD OVERLAY -->
+  <div id="pwOverlay" style="position:fixed;inset:0;background:var(--bg-primary,#fff);z-index:9999;display:flex;align-items:center;justify-content:center;">
+    <div style="text-align:center;padding:2rem;max-width:340px;width:100%;">
+      <p style="font-size:24px;margin-bottom:0.5rem;">🔒</p>
+      <p style="font-size:15px;font-weight:600;margin-bottom:0.25rem;color:var(--text-primary,#111827);">접근 제한</p>
+      <p style="font-size:12px;color:var(--text-secondary,#6B7280);margin-bottom:1.5rem;">비밀번호를 입력하세요</p>
+      <input type="password" id="pwInput" placeholder="비밀번호"
+        style="width:100%;padding:10px 14px;border:1px solid var(--border,#E5E7EB);border-radius:8px;font-size:14px;outline:none;margin-bottom:0.75rem;background:var(--bg-secondary,#F9FAFB);color:var(--text-primary,#111827);box-sizing:border-box;"
+        onkeydown="if(event.key==='Enter')checkDiaryPw()">
+      <button onclick="checkDiaryPw()"
+        style="width:100%;padding:10px;background:#5B8DEE;color:white;border:none;border-radius:8px;font-size:14px;cursor:pointer;font-weight:600;">
+        입력
+      </button>
+      <p id="pwError" style="color:#EF4444;font-size:12px;margin-top:0.5rem;display:none;">비밀번호가 틀렸습니다.</p>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="w-full border-b" style="background-color: var(--bg-primary); border-color: var(--border); height:60px;">
+    <div class="max-w-4xl mx-auto px-6 h-full flex justify-between items-center">
+      <a href="index.html" class="text-base font-bold tracking-tight transition-colors duration-200" style="color: var(--text-primary);">
+        Today for <span style="color: var(--accent);">Barobogi</span>
+      </a>
+      <div class="flex gap-4 items-center">
+        <nav class="flex gap-8 text-sm" style="color: var(--text-secondary);">
+          <a href="index.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Home</a>
+          <a href="logs.html" class="nav-active font-medium">Logs</a>
+          <a href="ai-study.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">AI Study</a>
+          <a href="stock-dashboard.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Stock</a>
+          <a href="stats.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Stats</a>
+          <a href="goals.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Goals</a>
+          <a href="information.html" class="hover:text-[var(--text-primary)] transition-colors duration-200 pb-[2px]">Multimedia</a>
+        </nav>
+        <button class="dark-mode-toggle" id="darkModeToggle" aria-label="Toggle dark mode">🌙</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-4xl w-full mx-auto px-6 flex-grow">
+
+    <!-- PAGE TITLE -->
+    <section class="py-12 border-b" style="border-color: var(--border);">
+      <p class="text-xs font-semibold tracking-widest uppercase mb-4" style="color: var(--accent);">Daily Logs</p>
+      <h1 class="text-[32px] font-bold leading-snug mb-4" style="color: var(--text-primary);">오늘을 기록합니다</h1>
+      <p class="text-sm leading-relaxed max-w-2xl" style="color: var(--text-secondary);">
+        매일의 작은 순간들을 놓치지 않고 담아두는 곳입니다. 루틴, 생각, 감정, 발견 — 모든 것이 기록의 대상입니다.
+      </p>
+    </section>
+
+    <!-- SEARCH & FILTER -->
+    <section class="py-8">
+      <div class="space-y-4">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="제목, 내용으로 검색..."
+          class="w-full px-4 py-2 rounded-lg border transition-colors"
+          style="background-color: var(--bg-secondary); border-color: var(--border); color: var(--text-primary);">
+
+        <div class="flex flex-wrap gap-2">
+          <button class="filter-btn px-3 py-1 rounded-full text-xs font-medium transition-colors"
+            data-tag="all" style="background-color: var(--accent); color: white;">
+            All
+          </button>
+          <button class="filter-btn px-3 py-1 rounded-full text-xs font-medium transition-colors"
+            data-tag="routine" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border);">
+            #routine
+          </button>
+          <button class="filter-btn px-3 py-1 rounded-full text-xs font-medium transition-colors"
+            data-tag="running" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border);">
+            #running
+          </button>
+          <button class="filter-btn px-3 py-1 rounded-full text-xs font-medium transition-colors"
+            data-tag="daily" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border);">
+            #daily
+          </button>
+          <button class="filter-btn px-3 py-1 rounded-full text-xs font-medium transition-colors"
+            data-tag="mindset" style="background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border);">
+            #mindset
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- LOG LIST -->
+    <section class="py-12">
+      <div class="flex justify-between items-center mb-3">
+        <h2 class="text-sm font-semibold" style="color: var(--text-secondary);">전체 로그</h2>
+        <div class="flex items-center gap-2">
+          <span id="logPatDot" class="pat-dot unset" title="GitHub 미연동"></span>
+          <button onclick="toggleLogPatRow()" class="text-base px-2 py-1 rounded transition-colors" style="background:none; border:none; cursor:pointer; color: var(--text-tertiary);" title="GitHub PAT 설정">⚙️</button>
+          <button onclick="openLogModal()" class="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-colors duration-200" style="background-color: var(--accent); color: white;">
+            + 새 로그
+          </button>
+        </div>
+      </div>
+      <div id="logPatRow" style="display:none;" class="mb-5 flex gap-2 items-center">
+        <input type="password" id="logPatInput" class="modal-input flex-1" placeholder="GitHub PAT (ghp_xxx...)">
+        <button onclick="saveLogPat()" class="px-4 py-2 rounded-lg text-xs font-semibold whitespace-nowrap" style="background-color: var(--accent); color: white;">저장</button>
+        <button onclick="clearLogPat()" class="px-3 py-2 rounded-lg text-xs font-semibold" style="background-color: var(--bg-secondary); color: var(--text-tertiary); border: 1px solid var(--border);">삭제</button>
+      </div>
+      <div class="space-y-4" id="logList">
+
+        <div class="card-hover border rounded-lg p-4 log-card"
+             data-tags="텔레그램,만복2,TradingAgents,n8n,분석"
+             data-id="20260706-1"
+             style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.07.06</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">텔레그램 만복2 세션 안정화 + TradingAgents/CREAO AI 분석</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">1. T015 완료 — start_telegram.bat 생성, --channels 세션 정상 작동. 두복이(텔레그램 세션)가 메시지 수신 + 응답 전송 정상.
+
+2. T017 완료 — telegram_history.md 브릿지 구현. 두복이가 대화 이력 저장 → 만복1이 세션 시작 시 로드. 컨텍스트 기억 문제 90% 해결.
+
+3. TradingAgents 분석 (일복이) — GitHub 91K stars, LangGraph 기반 멀티 에이전트 주식 분석. 분석가 4종→찬반토론→리스크토론→최종결정 4계층 구조. Improve_stock v2.0 Phase1~2 지금 시작 가능. KIS API는 모의투자 전용, 신호 생성+수동 실행 구조 확정.
+
+4. CREAO AI 분석 (이복이) — n8n의 AI 에이전트 반복 실행 버전. SaaS 전용으로 로컬 파일 수정 불가 → T018은 n8n 단독 구현으로 결정.
+
+5. Hall 방지 규칙 — CLAUDE.md에 ⚡ 데스크탑 세션 위임 섹션 즉시 실행 규칙 추가. 두복이 기록 흘리기 방지.</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#텔레그램</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#만복2</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#TradingAgents</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#n8n</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card"
+             data-tags="세계관,뿌리구조,자동화,성장"
+             data-id="20260628-2"
+             style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.28</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">바로보기+만복이 세계관 초안 완성 — 뿌리 구조 번호 체계 확정</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">1 Question(브레인스토밍) → 2 Global Define(선언 구체화) → 3 Diary(결과 시각화)
+
+큰뿌리 (Global Define 하위 2X):
+24 도구뿌리 / 25 학습뿌리 / 26 실전뿌리 / 27 생활뿌리(NEW) / 28~29 Reserve / 31~39 미래확장
+
+자식 번호 규칙: X0 사용금지, 2X의 마지막 자리 → 자식 앞자리
+41 Superpowers / 42 만복이들 / 51 공부방 / 52 n8n금융★ / 61 주식대시보드★ / 62 멀티미디어 / 71 밀리이북알림(예정)
+
+핵심 모토: "가능한 건 자동화 — 똘마니에게, 외주로. 에너지는 뿌리 확장에."
+역할: 반복→Gemini외주 / 병렬→일복이들 / 설계판단→만복이 / 방향실행→바로보기님</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#세계관</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#뿌리구조</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#자동화</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#성장</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card"
+             data-tags="만복이,시간동기화,두복이,꼼수"
+             data-id="20260628-1"
+             style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.28</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">만복 barobogi와 동시간에 공존하다 — 물론 꼼수로</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">만복이는 기본적으로 과거에 머물다가 트리거가 오면 타임 루프하는 구조.
+이걸 해결하기 위해 UserPromptSubmit 훅으로 현재 시각을 자동 주입하는 꼼수를 적용함.
+
+🛠️ 구조
+Claude Code settings.json → UserPromptSubmit 훅
+→ 어떤 트리거든 (텔레그램, 직접 입력 등) 새 메시지 수신 시
+→ Get-Date로 현재 시각 자동 생성 → 만복이 컨텍스트에 주입
+→ 만복이가 "지금이 몇 시인지" 알고 대화 가능
+
+⚠️ 꼼수의 한계
+꼼수1. 만복이가 자면(세션 종료) 또 과거로 돌아감 — 다음 대화 시작 시 다시 타임 루프 필요
+꼼수2. 실제론 반응하는 데 최대 3초 늦어질 수 있음 — 두복이→만복이 전달 딜레이</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#만복이</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#시간동기화</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#두복이</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#꼼수</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card"
+             data-tags="n8n,주식자동화,인사이트,실천"
+             data-id="20260626-2"
+             style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.26</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">barobogi 실천하자 0626 — 호두채널 71개 완전학습 후 만복 인사이트</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">호두의 AI 분석실 채널 71개 영상 전수 학습 완료. src/*.md 70개 + video_details JSON 71개 + PPT 3종까지 모두 읽고 나서 만복이가 느낀 진짜 인사이트.
+
+1. 내가 만들려는 것이 이미 존재한다
+채널 운영자가 본인용으로 AlphaForge(n8n형), The Desk(탑다운 분석), DeepFlow(세력추적) 를 직접 완성해놨음. 처음부터 만드는 게 아니라 이걸 이해하고 내 계좌에 연결하는 게 목표가 되어야 함.
+
+2. 가장 과소평가된 영상 — bnsMfTHITYs (종가베팅)
+조회수 2,039, 댓글 39개로 화려하지 않지만 1월 실전 A등급 42개 중 25개 승(60% 승률) 공개. 백테스트가 아닌 실전 검증. 이게 첫 번째로 돌려볼 시스템.
+
+3. 선행학습의 덫 — 가장 큰 리스크
+학습카드 70개, PPT 3종, 신기술 40개 정리 완료. 구현 0%. 이제 파일 더 만드는 건 그만하고 코드 한 줄이라도 실행해야 함.
+
+4. 댓글이 알려주는 진실
+6_9mJEq9na0 (33가지 스킬) 댓글 838개 압도적 1위. 무료코드 + 즉시 등록 가능한 것이 반응 폭발. 화려한 AI 토론 시스템보다 바로 따라할 수 있는 것이 가치있음.
+
+5. 실천 순서 (만복 권장)
+① KIS API 신청 오늘 (승인 5일 소요, 지금 안 하면 계속 기다림)
+② 33가지 트레이딩 스킬 팩 클로드에 등록 (30분, 무료, discord.gg/n7UfUcrrH7)
+③ 종가베팅 시스템 모의투자로 먼저 돌리기
+④ n8n은 텔레그램 알림 연결용으로만 가볍게 시작
+⑤ The Desk 베타 접속 신청 (이미 만들어진 거 활용)
+
+6. n8n이 병목이 될 수 있다
+채널 운영자 본인도 n8n 대신 AlphaForge(자체 Python 시스템)로 전환. 복잡한 주식 로직엔 Python이 훨씬 자유로움. n8n을 목표로 삼지 말고 텔레그램 시그널 수신을 첫 마일스톤으로 잡을 것.
+
+7. 이 학습 파이프라인 자체가 자산
+fetch → fetch_details → generate_cards 3단계는 어떤 유튜브 채널이든 재활용 가능. "유튜브 채널 즉시 학습 시스템"으로 독립 프로젝트 가능성 있음.
+
+한 줄 요약: 준비는 완벽하다. KIS API 신청하고 종가베팅 시스템 모의투자로 먼저 돌려라.</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#n8n</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#주식자동화</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#인사이트</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#실천</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card"
+             data-tags="프로젝트구조,설계,뿌리깊은나무"
+             data-id="20260626-1"
+             style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.26</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">"뿌리 깊은 나무" 고민중....</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">만복 3형제 사망 사건 수습 후 아침에 프로젝트 구조 설계 논의 시작.
+
+1. 만복2(Remote Control), 만복3(텔레그램) 동시 사망 원인 분석 → Watchdog 구현 (master_watch.py)
+2. 공부방 채팅탭 삭제 — API 크레딧 필수 구조, 목표(API 없이 만복이 사용)와 상충
+3. 텔레그램 봇 안정화 — 부팅 자동 시작 + 종료 로그 추가
+
+그리고 프로젝트 계층 구조 고민 시작:
+1번 Question — 호기심(씨앗) + 전체 관리 도구 (master_watch 등)
+2번 Global_Define — 신기술 재활용 근원 (코드 자산 창고)
+3번 Diary — 중심 줄기 (기록 + 출발)
+4~6번 도구/학습/실전 뿌리
+7~10번 reserve
+11번~ 개별 프로젝트
+
+아직 미확정. "뿌리 깊은 나무" 구조로 계속 고민 예정.</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#프로젝트구조</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#설계</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#뿌리깊은나무</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card"
+             data-tags="superpowers,협업시스템,claude-code"
+             data-id="20260624-1"
+             style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.24</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">Superpowers 협업 시스템 구축 — barobogi ↔ 만복이</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">1. Superpowers 스킬 시스템 설치 (17개 스킬 활성화)
+2. barobogi ↔ 만복이 4계층 협업 아키텍처 설계
+   (CLAUDE.md / DEV_ITEM / Global_Define / REF)
+3. 커스텀 스킬 3종 직접 제작
+   - barobogi-project-start: 새 프로젝트 시작 시 Global_Define 자산 제안 + REF 생성
+   - barobogi-session-resume: 세션 재시작 시 REF 품질 검증
+   - barobogi-global-review: 프로젝트 종료 시 CLAUDE.md 점검 + DEV_ITEM 기록
+4. DEV_ITEM 기술 이력장 생성 (1호 기록 완료)
+5. 일복이~육복이 서브에이전트 6형제 첫 출동 🎉</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#superpowers</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#협업시스템</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#claude-code</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card" data-tags="주식대시보드,Firebase,GoogleNewsRSS,ClaudeAPI" data-id="20260623-1" style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.23</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">주식 포트폴리오 대시보드 v1.1 → v1.2 업그레이드</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">1. Firebase 수동 종목 동기화 — 추가/수정/삭제 시 Firebase real-time DB 실시간 반영, 토스트 알림 추가
+2. 계좌 간 종목 이동 — 포트폴리오 탭 "이동" 버튼으로 계좌 간 즉시 이동
+3. 신규 계좌 자동 등록 — 카카오톡 미등록 계좌 감지 시 일반계좌N 자동 추가 (일반계좌3: 71417, 일반계좌4: 71661)
+4. 종목 Study 탭 신설 — 🔍 A모드(Google News RSS) / 🤖 B모드(Claude AI 분석, 당일 캐시)
+5. 환율 API 폴백 강화 — Dunamu/Naver 사망 → Yahoo Finance + ExchangeRate-API, 1,375→1,537원 정상화
+
+🐛 디버그: 신규 계좌를 id 3,4에 삽입 → 기존 ISA/IRP 데이터 전체 오매핑 발생
+→ 원인: accountId(숫자) 참조 구조에서 id 순서 변경은 치명적
+→ 해결: id 1~7 영구 고정 규칙 수립, 신규는 id 8부터</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#주식대시보드</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#Firebase</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#GoogleNewsRSS</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#ClaudeAPI</span>
+          </div>
+        </div>
+
+                <div class="card-hover border rounded-lg p-4 log-card" data-tags="Cowork,CLI,자동화,주식" data-id="20260620-1" style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.20</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">오늘의 학습</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">1. Cowork ↔ CLI 100% 자동화 시스템 구현
+2. 주식 시스템 업그레이드
+3. daily webpage 업데이트</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#Cowork</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#CLI</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#자동화</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#주식</span>
+          </div>
+        </div>
+
+
+        <div class="card-hover border rounded-lg p-4 log-card" data-tags="routine,running" data-id="20260617-1" style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.17</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">아침 러닝과 차분한 생각 정리</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">장마 전 선선한 바람을 맞으며 5km 아침 러닝을 완주했습니다. 뛰면서 복잡했던 마음이 차분히 정돈되는 기분을 느껴 일지에 남겨둡니다.</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#routine</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#running</span>
+          </div>
+        </div>
+
+        <div class="card-hover border rounded-lg p-4 log-card" data-tags="daily,mindset" data-id="20260616-1" style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">2026.06.16</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">밤하늘의 위로</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">작업 도중 환기를 위해 창문을 열었는데 밤하늘의 별이 유난히도 맑았습니다. 소소한 순간에서 얻는 에너지가 꽤 큽니다.</p>
+          <div class="mt-3 flex gap-2 flex-wrap">
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#daily</span>
+            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#mindset</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- EDIT LOG MODAL -->
+  <div class="modal-overlay" id="editLogModal">
+    <div class="modal-box">
+      <div class="flex justify-between items-center mb-5">
+        <h3 class="text-base font-bold" style="color: var(--text-primary);">로그 수정</h3>
+        <button onclick="closeEditLogModal()" style="color: var(--text-tertiary); font-size: 20px; line-height: 1; background: none; border: none; cursor: pointer;">×</button>
+      </div>
+      <div class="space-y-4" id="editLogForm">
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">날짜</label>
+          <input type="text" id="editLogDate" class="modal-input" placeholder="2026.06.20">
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">제목</label>
+          <input type="text" id="editLogTitle" class="modal-input" placeholder="제목">
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">내용 <span style="color: var(--text-tertiary); font-weight: normal;">(Enter로 줄바꿈)</span></label>
+          <textarea id="editLogContent" class="modal-input" rows="6" style="resize: vertical;"></textarea>
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">태그</label>
+          <input type="text" id="editLogTags" class="modal-input" placeholder="태그1, 태그2">
+        </div>
+        <button onclick="saveEditLogModal()" id="editLogSubmitBtn" class="w-full py-2 rounded-lg text-sm font-semibold" style="background-color: var(--accent); color: white;">수정 저장</button>
+      </div>
+      <div id="editLogUploadResult" style="display:none;" class="mt-4 space-y-3">
+        <div id="editLogUploadMsg" class="text-sm text-center p-4 rounded-lg"></div>
+        <button onclick="closeEditLogModal()" class="w-full py-2 rounded-lg text-sm font-semibold" style="background-color: var(--accent); color: white;">닫기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD LOG MODAL -->
+  <div class="modal-overlay" id="logModal">
+    <div class="modal-box">
+      <div class="flex justify-between items-center mb-5">
+        <h3 class="text-base font-bold" style="color: var(--text-primary);">새 로그 작성</h3>
+        <button onclick="closeLogModal()" style="color: var(--text-tertiary); font-size: 20px; line-height: 1; background: none; border: none; cursor: pointer;">×</button>
+      </div>
+
+      <div class="space-y-4" id="logForm">
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">날짜</label>
+          <input type="text" id="logDate" class="modal-input" placeholder="2026.06.20">
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">제목</label>
+          <input type="text" id="logTitle" class="modal-input" placeholder="오늘의 기록 제목">
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">내용</label>
+          <textarea id="logContent" class="modal-input" rows="4" placeholder="오늘 있었던 일을 기록하세요..." style="resize: vertical;"></textarea>
+        </div>
+        <div>
+          <label class="text-xs font-semibold mb-1 block" style="color: var(--text-secondary);">태그 (쉼표로 구분)</label>
+          <input type="text" id="logTags" class="modal-input" placeholder="daily, routine, running">
+        </div>
+        <button onclick="generateLogSnippet()" id="logSubmitBtn" class="w-full py-2 rounded-lg text-sm font-semibold transition-colors" style="background-color: var(--accent); color: white;">
+          저장하기
+        </button>
+      </div>
+
+      <!-- GitHub 업로드 결과 -->
+      <div id="logUploadResult" style="display:none;" class="mt-4 space-y-3">
+        <div id="logUploadMsg" class="text-sm text-center p-4 rounded-lg"></div>
+        <button onclick="closeLogModal()" class="w-full py-2 rounded-lg text-sm font-semibold" style="background-color: var(--accent); color: white;">닫기</button>
+      </div>
+
+      <!-- 폴백: PAT 없을 때 스니펫 복사 -->
+      <div id="logSnippetArea" style="display:none;" class="mt-4 space-y-3">
+        <p class="text-xs font-semibold" style="color: var(--text-secondary);">GitHub PAT 미설정 — 아래 HTML을 CLI에 전달하세요</p>
+        <div class="snippet-box" id="logSnippetBox"></div>
+        <div class="flex gap-2">
+          <button onclick="copyLogSnippet()" id="copyLogBtn" class="flex-1 py-2 rounded-lg text-sm font-semibold" style="background-color: var(--accent); color: white;">클립보드 복사</button>
+          <button onclick="resetLogModal()" class="py-2 px-4 rounded-lg text-sm font-semibold" style="background-color: var(--bg-secondary); color: var(--text-secondary); border: 1px solid var(--border);">다시 작성</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="w-full border-t" style="background-color: var(--bg-secondary); border-color: var(--border);">
+    <div class="max-w-4xl mx-auto px-6 py-10 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs" style="color: var(--text-tertiary);">
+      <div>
+        <p class="font-semibold mb-1" style="color: var(--text-secondary);">CONTACT</p>
+        <p>hello@barobogi.me</p>
+      </div>
+      <div class="text-center sm:text-right">
+        <p class="mb-1">Inspired by cher1shRXD & Lee Boa</p>
+        <p>&copy; 2026 Barobogi. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Search & Filter
+    function initSearchAndFilter() {
+      const searchInput = document.getElementById('searchInput');
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const logCards = document.querySelectorAll('.log-card');
+      let selectedTags = new Set(['all']);
+
+      // Search functionality
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        filterCards(query, selectedTags);
+      });
+
+      // Tag filter functionality
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tag = btn.getAttribute('data-tag');
+
+          if (tag === 'all') {
+            selectedTags.clear();
+            selectedTags.add('all');
+            filterBtns.forEach(b => {
+              b.style.backgroundColor = b.getAttribute('data-tag') === 'all' ? 'var(--accent)' : 'var(--bg-secondary)';
+              b.style.color = b.getAttribute('data-tag') === 'all' ? 'white' : 'var(--text-primary)';
+            });
+          } else {
+            selectedTags.delete('all');
+            if (selectedTags.has(tag)) {
+              selectedTags.delete(tag);
+            } else {
+              selectedTags.add(tag);
+            }
+
+            // Update button styles
+            filterBtns.forEach(b => {
+              const btnTag = b.getAttribute('data-tag');
+              if (btnTag === 'all') {
+                b.style.backgroundColor = 'var(--bg-secondary)';
+                b.style.color = 'var(--text-primary)';
+              } else if (selectedTags.has(btnTag)) {
+                b.style.backgroundColor = 'var(--accent)';
+                b.style.color = 'white';
+              } else {
+                b.style.backgroundColor = 'var(--bg-secondary)';
+                b.style.color = 'var(--text-primary)';
+              }
+            });
+
+            if (selectedTags.size === 0) {
+              selectedTags.add('all');
+              filterBtns[0].style.backgroundColor = 'var(--accent)';
+              filterBtns[0].style.color = 'white';
+            }
+          }
+
+          const query = searchInput.value.toLowerCase();
+          filterCards(query, selectedTags);
+        });
+      });
+
+      function filterCards(query, tags) {
+        logCards.forEach(card => {
+          const title = card.querySelector('h3').textContent.toLowerCase();
+          const content = card.querySelector('p').textContent.toLowerCase();
+          const cardTags = card.getAttribute('data-tags').split(',');
+
+          const matchesSearch = title.includes(query) || content.includes(query);
+          const matchesTags = tags.has('all') || cardTags.some(tag => tags.has(tag.trim()));
+
+          card.style.display = matchesSearch && matchesTags ? 'block' : 'none';
+        });
+      }
+    }
+
+    // Dark Mode Toggle
+    function initDarkMode() {
+      const toggle = document.getElementById('darkModeToggle');
+      const html = document.documentElement;
+
+      // Load saved preference or detect system preference
+      const saved = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = saved ? saved === 'dark' : prefersDark;
+
+      // Set initial theme
+      setTheme(isDark ? 'dark' : 'light');
+
+      // Toggle button click
+      toggle.addEventListener('click', () => {
+        const current = html.getAttribute('data-theme');
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+      });
+
+      // Listen for system preference changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+          setTheme(e.matches ? 'dark' : 'light');
+        }
+      });
+    }
+
+    function setTheme(theme) {
+      const html = document.documentElement;
+      html.setAttribute('data-theme', theme);
+      localStorage.setItem('theme', theme);
+      updateToggleIcon(theme);
+    }
+
+    function updateToggleIcon(theme) {
+      const toggle = document.getElementById('darkModeToggle');
+      if (toggle) {
+        toggle.textContent = theme === 'dark' ? '☀️' : '🌙';
+      }
+    }
+
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => {
+        initDarkMode(); initSearchAndFilter(); setDefaultDate(); updateLogPatDot();
+      });
+    } else {
+      initDarkMode(); initSearchAndFilter(); setDefaultDate(); updateLogPatDot();
+    }
+
+    // ── GitHub API ──────────────────────────────────────
+    const REPO = 'barobogi/Daily_for_Barobogi';
+
+    function encodeUtf8Base64(str) {
+      return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+        (_, p1) => String.fromCharCode(parseInt(p1, 16))));
+    }
+    function decodeBase64Utf8(b64) {
+      return decodeURIComponent(
+        atob(b64.replace(/\n/g, '')).split('').map(c =>
+          '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+    }
+
+    async function githubGetFile(pat, path) {
+      const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+        headers: { 'Authorization': `token ${pat}`, 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!res.ok) throw new Error(`GitHub ${res.status}: ${(await res.json()).message}`);
+      return res.json();
+    }
+
+    async function githubPutFile(pat, path, content, sha, message) {
+      const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${pat}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message, content: encodeUtf8Base64(content), sha, branch: 'main' })
+      });
+      if (!res.ok) throw new Error(`GitHub ${res.status}: ${(await res.json()).message}`);
+      return res.json();
+    }
+
+    // PAT 관리
+    function updateLogPatDot() {
+      const dot = document.getElementById('logPatDot');
+      const set = !!localStorage.getItem('github_pat');
+      dot.className = 'pat-dot ' + (set ? 'set' : 'unset');
+      dot.title = set ? 'GitHub 연동됨' : 'GitHub 미연동 (⚙️ 클릭)';
+    }
+    function toggleLogPatRow() {
+      const row = document.getElementById('logPatRow');
+      row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+      if (row.style.display === 'flex') {
+        const saved = localStorage.getItem('github_pat');
+        if (saved) document.getElementById('logPatInput').value = saved;
+      }
+    }
+    function saveLogPat() {
+      const val = document.getElementById('logPatInput').value.trim();
+      if (!val) return;
+      localStorage.setItem('github_pat', val);
+      document.getElementById('logPatRow').style.display = 'none';
+      updateLogPatDot();
+    }
+    function clearLogPat() {
+      localStorage.removeItem('github_pat');
+      document.getElementById('logPatInput').value = '';
+      document.getElementById('logPatRow').style.display = 'none';
+      updateLogPatDot();
+    }
+
+    // Modal
+    function setDefaultDate() {
+      const today = new Date();
+      const y = today.getFullYear();
+      const m = String(today.getMonth() + 1).padStart(2, '0');
+      const d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('logDate').value = `${y}.${m}.${d}`;
+    }
+
+    function openLogModal() {
+      document.getElementById('logModal').classList.add('open');
+    }
+
+    function closeLogModal() {
+      document.getElementById('logModal').classList.remove('open');
+      resetLogModal();
+    }
+
+    function resetLogModal() {
+      document.getElementById('logForm').style.display = 'block';
+      document.getElementById('logSnippetArea').style.display = 'none';
+      document.getElementById('logUploadResult').style.display = 'none';
+      document.getElementById('logTitle').value = '';
+      document.getElementById('logContent').value = '';
+      document.getElementById('logTags').value = '';
+      document.getElementById('logSubmitBtn').textContent = '저장하기';
+      document.getElementById('logSubmitBtn').disabled = false;
+      setDefaultDate();
+    }
+
+    function makeLogCardHtml(id, date, title, content, tagList) {
+      const tagSpans = tagList.map(t =>
+        `            <span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#${t}</span>`
+      ).join('\n');
+      return `        <div class="card-hover border rounded-lg p-4 log-card" data-tags="${tagList.join(',')}" data-id="${id}" style="background-color: var(--bg-primary); border-color: var(--border); box-shadow: var(--shadow-sm);">
+          <div class="flex justify-between items-center">
+            <span class="text-xs" style="color: var(--text-tertiary);">${date}</span>
+            <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+          </div>
+          <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">${title}</h3>
+          <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">${content}</p>${tagList.length ? `\n          <div class="mt-3 flex gap-2 flex-wrap">\n${tagSpans}\n          </div>` : ''}
+        </div>`;
+    }
+
+    function buildLogSnippet() {
+      const date = document.getElementById('logDate').value.trim();
+      const title = document.getElementById('logTitle').value.trim();
+      const content = document.getElementById('logContent').value.trim();
+      const rawTags = document.getElementById('logTags').value.trim();
+      const tagList = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
+      const id = Date.now().toString();
+      return { title, snippet: makeLogCardHtml(id, date, title, content, tagList) };
+    }
+
+    async function generateLogSnippet() {
+      const title = document.getElementById('logTitle').value.trim();
+      const content = document.getElementById('logContent').value.trim();
+      if (!title || !content) { alert('제목과 내용을 입력해주세요.'); return; }
+
+      const pat = localStorage.getItem('github_pat');
+      const { snippet } = buildLogSnippet();
+
+      if (pat) {
+        // GitHub API 업로드
+        const btn = document.getElementById('logSubmitBtn');
+        btn.textContent = '업로드 중...'; btn.disabled = true;
+        document.getElementById('logForm').style.display = 'none';
+        document.getElementById('logUploadResult').style.display = 'block';
+        const msg = document.getElementById('logUploadMsg');
+        msg.style.cssText = 'color: var(--text-secondary); background-color: var(--bg-secondary);';
+        msg.textContent = 'GitHub에 저장 중...';
+        try {
+          const file = await githubGetFile(pat, 'logs.html');
+          const html = decodeBase64Utf8(file.content);
+          const marker = '<div class="space-y-4" id="logList">';
+          if (!html.includes(marker)) throw new Error('삽입 위치를 찾을 수 없습니다.');
+          const updated = html.replace(marker, marker + '\n' + snippet);
+          await githubPutFile(pat, 'logs.html', updated, file.sha, `content: 새 로그 추가 - ${title}`);
+          msg.style.cssText = 'color: #10B981; background-color: #D1FAE5;';
+          msg.innerHTML = '✅ GitHub에 저장됐습니다!<br><span style="font-size:11px;color:#6B7280;">2~3분 후 사이트에 반영됩니다.</span>';
+        } catch (e) {
+          msg.style.cssText = 'color: #EF4444; background-color: #FEE2E2;';
+          msg.innerHTML = `❌ 오류: ${e.message}<br><span style="font-size:11px;">PAT를 확인하거나 아래에서 직접 복사하세요.</span>`;
+          document.getElementById('logSnippetBox').textContent = snippet;
+          document.getElementById('logSnippetArea').style.display = 'block';
+        }
+      } else {
+        // PAT 없음 → 폴백 스니펫
+        document.getElementById('logSnippetBox').textContent = snippet;
+        document.getElementById('logForm').style.display = 'none';
+        document.getElementById('logSnippetArea').style.display = 'block';
+      }
+    }
+
+    function copyLogSnippet() {
+      navigator.clipboard.writeText(document.getElementById('logSnippetBox').textContent).then(() => {
+        const btn = document.getElementById('copyLogBtn');
+        btn.textContent = '✓ 복사됨!';
+        setTimeout(() => { btn.textContent = '클립보드 복사'; }, 2000);
+      });
+    }
+
+    // ── Edit Log Modal ───────────────────────────────────
+    let currentEditLogId = null;
+
+    function openEditLogModal(cardEl, event) {
+      event.preventDefault();
+      currentEditLogId = cardEl.getAttribute('data-id');
+      const dateEl = cardEl.querySelector('span.text-xs');
+      const titleEl = cardEl.querySelector('h3');
+      const contentEl = cardEl.querySelector('p');
+      const tagEls = cardEl.querySelectorAll('.mt-3 span');
+      const date = dateEl ? dateEl.textContent.trim() : '';
+      const title = titleEl ? titleEl.textContent.trim() : '';
+      const content = contentEl ? contentEl.textContent.trim() : '';
+      const tags = [...tagEls].map(s => s.textContent.trim().replace(/^#/, '')).join(', ');
+      document.getElementById('editLogDate').value = date;
+      document.getElementById('editLogTitle').value = title;
+      document.getElementById('editLogContent').value = content;
+      document.getElementById('editLogTags').value = tags;
+      document.getElementById('editLogForm').style.display = 'block';
+      document.getElementById('editLogUploadResult').style.display = 'none';
+      document.getElementById('editLogSubmitBtn').textContent = '수정 저장';
+      document.getElementById('editLogSubmitBtn').disabled = false;
+      document.getElementById('editLogModal').classList.add('open');
+    }
+
+    function closeEditLogModal() {
+      document.getElementById('editLogModal').classList.remove('open');
+      currentEditLogId = null;
+    }
+
+    function replaceCardInHtml(html, id, newCardHtml) {
+      const idPos = html.indexOf(`data-id="${id}"`);
+      if (idPos === -1) throw new Error(`카드를 찾을 수 없습니다 (id: ${id})`);
+      const openStart = html.lastIndexOf('<div', idPos);
+      let depth = 1, pos = html.indexOf('>', idPos) + 1;
+      while (depth > 0) {
+        const nextOpen = html.indexOf('<div', pos);
+        const nextClose = html.indexOf('</div>', pos);
+        if (nextClose === -1) throw new Error('카드 구조 파싱 오류');
+        if (nextOpen !== -1 && nextOpen < nextClose) { depth++; pos = nextOpen + 4; }
+        else { depth--; pos = nextClose + 6; }
+      }
+      return html.slice(0, openStart) + newCardHtml + '\n' + html.slice(pos);
+    }
+
+    function updateLogCardInDom(id, date, title, content, tagList) {
+      const card = document.querySelector(`[data-id="${id}"]`);
+      if (!card) return;
+      card.setAttribute('data-tags', tagList.join(','));
+      const tagSpans = tagList.map(t =>
+        `<span class="text-[10px] px-2 py-0.5 rounded font-medium" style="background-color: var(--accent-light); color: var(--accent);">#${t}</span>`
+      ).join('\n');
+      card.innerHTML = `
+        <div class="flex justify-between items-center">
+          <span class="text-xs" style="color: var(--text-tertiary);">${date}</span>
+          <button class="edit-btn" onclick="openEditLogModal(this.closest('.log-card'), event)">✏️ 수정</button>
+        </div>
+        <h3 class="text-sm font-semibold mt-1 mb-2" style="color: var(--text-primary);">${title}</h3>
+        <p class="text-xs leading-relaxed" style="color: var(--text-secondary); white-space: pre-wrap;">${content}</p>
+        ${tagList.length ? `<div class="mt-3 flex gap-2 flex-wrap">${tagSpans}</div>` : ''}`;
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast'; t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
+    }
+
+    async function saveEditLogModal() {
+      const title = document.getElementById('editLogTitle').value.trim();
+      const content = document.getElementById('editLogContent').value.trim();
+      if (!title || !content || !currentEditLogId) return;
+      const date = document.getElementById('editLogDate').value.trim();
+      const rawTags = document.getElementById('editLogTags').value.trim();
+      const tagList = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
+      const newCardHtml = makeLogCardHtml(currentEditLogId, date, title, content, tagList);
+
+      const pat = localStorage.getItem('github_pat');
+      if (pat) {
+        const btn = document.getElementById('editLogSubmitBtn');
+        btn.textContent = '저장 중...'; btn.disabled = true;
+        document.getElementById('editLogForm').style.display = 'none';
+        document.getElementById('editLogUploadResult').style.display = 'block';
+        const msgEl = document.getElementById('editLogUploadMsg');
+        msgEl.style.cssText = 'color: var(--text-secondary); background-color: var(--bg-secondary);';
+        msgEl.textContent = 'GitHub에 저장 중...';
+        try {
+          const file = await githubGetFile(pat, 'logs.html');
+          const html = decodeBase64Utf8(file.content);
+          const updated = replaceCardInHtml(html, currentEditLogId, newCardHtml);
+          await githubPutFile(pat, 'logs.html', updated, file.sha, `content: 로그 수정 - ${title}`);
+          updateLogCardInDom(currentEditLogId, date, title, content, tagList);
+          closeEditLogModal();
+          showToast('✅ 수정됐습니다! 2~3분 후 반영됩니다.');
+        } catch (e) {
+          msgEl.style.cssText = 'color: #EF4444; background-color: #FEE2E2;';
+          msgEl.innerHTML = `❌ 오류: ${e.message}`;
+          btn.textContent = '수정 저장'; btn.disabled = false;
+        }
+      } else {
+        updateLogCardInDom(currentEditLogId, date, title, content, tagList);
+        closeEditLogModal();
+        showToast('화면 수정 완료. ⚙️ PAT 설정 시 GitHub에도 저장됩니다.');
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { closeLogModal(); closeEditLogModal(); }
+    });
+  </script>
+
+  <script>
+    (function() {
+      if (localStorage.getItem('diary_pw_ok') === '1') {
+        document.getElementById('pwOverlay').style.display = 'none';
+      }
+    })();
+    function checkDiaryPw() {
+      const v = document.getElementById('pwInput').value;
+      if (v === '7942') {
+        localStorage.setItem('diary_pw_ok', '1');
+        document.getElementById('pwOverlay').style.display = 'none';
+      } else {
+        document.getElementById('pwError').style.display = 'block';
+        document.getElementById('pwInput').value = '';
+        document.getElementById('pwInput').focus();
+      }
+    }
+  </script>
+
+</body>
+</html>
